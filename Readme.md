@@ -1,15 +1,17 @@
 # Image SMS (prove of concept)
 
 Image SMS uses long text SMS to send a very small picture. It uses base64 technique (= email attachment)
-to transfer data. Use *Settings* to set the phone number of the receiver!
+to transfer data.
 
 ## Screenshot
 
 ![Screenshot](picture.jpg)
 
+![Screenshot phone](picture2.jpg)
+
 ## Get the App
 
-Get APK from [here](https://raw.githubusercontent.com/no-go/ImageSms/master/app/release/click.dummer.imagesms.apk).
+Get APK from [here](https://raw.githubusercontent.com/no-go/ImageSms/previewremove/app/release/click.dummer.imagesms.apk).
 
 ## License
 

@@ -5,7 +5,7 @@
         android:key="send_to"
         android:inputType="phone"
         android:defaultValue="#100*"
-        android:title="@string/send_to"
+        android:title="Send to ..."
         />
 
 </PreferenceScreen>

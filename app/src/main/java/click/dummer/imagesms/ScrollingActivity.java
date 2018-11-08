@@ -1,10 +1,12 @@
 package click.dummer.imagesms;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -25,6 +27,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.telephony.SmsManager;
+import android.text.InputType;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.format.DateFormat;
@@ -35,6 +38,7 @@ import android.view.Surface;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -48,11 +52,10 @@ public class ScrollingActivity extends AppCompatActivity {
     private FloatingActionButton fab;
     private SmsManager smsManager = SmsManager.getDefault();
     public static SharedPreferences pref;
+    private String message;
+    private ArrayList<String> parts;
 
     private static final int CAMERA_REQUEST = 1888;
-    private Camera mCamera;
-    private CameraPreview mPreview;
-    private int cameraId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,9 +72,6 @@ public class ScrollingActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                //File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-                //File output = new File(dir, "CameraContentDemo.jpeg");
-                //cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(output));
                 startActivityForResult(cameraIntent, CAMERA_REQUEST);
             }
         });
@@ -117,16 +117,6 @@ public class ScrollingActivity extends AppCompatActivity {
         }
     }
 
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        //mCamera = getCameraInstance();
-        //mPreview = new CameraPreview(this, mCamera);
-        //FrameLayout preview = (FrameLayout) findViewById(R.id.preview);
-        //preview.addView(mPreview);
-    }
-
     private void sendSMS(String phoneNumber, String message) {
         String SENT = "SMS_SENT";
         String DELIVERED = "SMS_DELIVERED";
@@ -141,7 +131,7 @@ public class ScrollingActivity extends AppCompatActivity {
                 switch (getResultCode())
                 {
                     case Activity.RESULT_OK:
-                        Snackbar.make(fab, getString(R.string.sent), Snackbar.LENGTH_LONG)
+                        Snackbar.make(fab, "Sent", Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                         break;
                     case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
@@ -181,71 +171,11 @@ public class ScrollingActivity extends AppCompatActivity {
                 }
             }
         }, new IntentFilter(DELIVERED));
-        ArrayList<String> parts = smsManager.divideMessage(message);
         ArrayList<PendingIntent> sentPIs = new ArrayList<>();
         ArrayList<PendingIntent> deliveredPIs = new ArrayList<>();
         sentPIs.add(sentPI);
         deliveredPIs.add(deliveredPI);
         smsManager.sendMultipartTextMessage(phoneNumber, null, parts, sentPIs, deliveredPIs);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_scrolling, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.action_settings) {
-            Intent intent = new Intent(ScrollingActivity.this, PreferencesActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-            startActivity(intent);
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    public Camera getCameraInstance() {
-        Camera c = null;
-        try {
-            int numberOfCameras = Camera.getNumberOfCameras();
-            for (int i = 0; i < numberOfCameras; i++) {
-                Camera.CameraInfo info = new Camera.CameraInfo();
-                Camera.getCameraInfo(i, info);
-                if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
-                    cameraId = i;
-                    c = Camera.open(i);
-                    c.setDisplayOrientation(ori());
-                    break;
-                }
-            }
-        } catch (Exception e) {}
-        return c;
-    }
-
-    public int ori() {
-        android.hardware.Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
-        android.hardware.Camera.getCameraInfo(cameraId, info);
-        int rotation = getWindowManager().getDefaultDisplay().getRotation();
-        int degrees = 0;
-        switch (rotation) {
-            case Surface.ROTATION_0: degrees = 0; break;
-            case Surface.ROTATION_90: degrees = 90; break;
-            case Surface.ROTATION_180: degrees = 180; break;
-            case Surface.ROTATION_270: degrees = 270; break;
-        }
-
-        int result;
-        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-            result = (info.orientation + degrees) % 360;
-            result = (360 - result) % 360;  // compensate the mirror
-        } else {  // back-facing
-            result = (info.orientation - degrees + 360) % 360;
-        }
-        return result;
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -261,8 +191,33 @@ public class ScrollingActivity extends AppCompatActivity {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             mutableBitmap.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream);
 
-            String message = "data:image/jpeg;base64," + Base64.encodeToString(byteArrayOutputStream.toByteArray(), Base64.NO_WRAP);
-            sendSMS(pref.getString("send_to", "#100*"), message);
+            message = "data:image/jpeg;base64," + Base64.encodeToString(byteArrayOutputStream.toByteArray(), Base64.NO_WRAP);
+            parts = smsManager.divideMessage(message);
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+            final EditText input = new EditText(this);
+            builder.setTitle("Send in " + String.valueOf(parts.size()) + " messages");
+            input.setInputType(InputType.TYPE_CLASS_PHONE);
+            input.setText(pref.getString("send_to", "#100*"));
+            builder.setView(input);
+
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    String phone = input.getText().toString();
+                    pref.edit().putString("send_to", phone).apply();
+                    sendSMS(phone, message);
+                }
+            });
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+
+            builder.show();
         }
     }
 }
