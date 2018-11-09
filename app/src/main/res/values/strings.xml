@@ -1,3 +1,17 @@
 <resources>
     <string name="app_name">Image SMS</string>
+    <string name="send_to">send to …</string>
+    <string name="display_limit">SMS display limit</string>
+    <string name="sent_hint">Sent</string>
+    <string name="failure_hint">Generic failure</string>
+    <string name="no_service_hint">No service</string>
+    <string name="null_pdu_hint">Null PDU</string>
+    <string name="radio_off_hint">Radio off</string>
+    <string name="sms_delivered_hint">SMS delivered</string>
+    <string name="not_delivered_hint">SMS not delivered</string>
+    <string name="ok_btn">OK</string>
+    <string name="cancel_btn">Cancel</string>
+    <string name="date_format">yyyy-MM-dd HH:mm</string>
+    <string name="problem_image">There is a problem with that image data.</string>
+    <string name="send_in_x_msg">Send in %s messages</string>
 </resources>

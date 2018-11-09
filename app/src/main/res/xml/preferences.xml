@@ -5,7 +5,14 @@
         android:key="send_to"
         android:inputType="phone"
         android:defaultValue="#100*"
-        android:title="Send to ..."
+        android:title="@string/send_to"
+        />
+
+    <EditTextPreference
+        android:inputType="numberDecimal"
+        android:key="display_limit"
+        android:defaultValue="25"
+        android:title="@string/display_limit"
         />
 
 </PreferenceScreen>

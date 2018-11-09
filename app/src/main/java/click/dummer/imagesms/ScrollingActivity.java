@@ -27,6 +27,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.telephony.SmsManager;
+import android.telephony.gsm.SmsMessage;
 import android.text.InputType;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -48,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class ScrollingActivity extends AppCompatActivity {
+    private static ScrollingActivity inst;
     private TextView textView;
     private FloatingActionButton fab;
     private SmsManager smsManager = SmsManager.getDefault();
@@ -75,46 +77,7 @@ public class ScrollingActivity extends AppCompatActivity {
                 startActivityForResult(cameraIntent, CAMERA_REQUEST);
             }
         });
-
-        ContentResolver contentResolver = getContentResolver();
-        Cursor smsInboxCursor = contentResolver.query(Uri.parse("content://sms/inbox"), null, null, null, null);
-        int indexBody = smsInboxCursor.getColumnIndex("body");
-        int indexAddress = smsInboxCursor.getColumnIndex("address");
-        int indexDate = smsInboxCursor.getColumnIndex("date");
-        if (!(indexBody < 0 || !smsInboxCursor.moveToFirst())) {
-            do {
-                Date date = new Date(smsInboxCursor.getLong(indexDate));
-                textView.append(
-                        smsInboxCursor.getString(indexAddress) + " " +
-                        DateFormat.format("dd.MM.yyyy HH:mm", date).toString() +
-                        "\n"
-                );
-                if (smsInboxCursor.getString(indexBody).startsWith("data:image")) {
-                    textView.append("  ");
-                    CharSequence sp = textView.getText();
-                    SpannableStringBuilder ssb = new SpannableStringBuilder(sp);
-                    String coded = smsInboxCursor.getString(indexBody);
-                    byte[] decodedString = Base64.decode(coded.substring(coded.indexOf(",") + 1), Base64.DEFAULT);
-
-                    Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                    Drawable dr = new BitmapDrawable(getResources(), decodedByte);
-                    dr.setBounds(0, 0, 2*decodedByte.getWidth(), 2*decodedByte.getHeight());
-
-                    ImageSpan isp = new ImageSpan(dr);
-                    ssb.setSpan(
-                            isp,
-                            sp.length()-2,
-                            sp.length()-1,
-                            Spannable.SPAN_INCLUSIVE_INCLUSIVE
-                    );
-                    textView.setText(ssb);
-                } else {
-                    textView.append(smsInboxCursor.getString(indexBody));
-                }
-                textView.append("\n\n");
-            } while (smsInboxCursor.moveToNext());
-
-        }
+        readSms("content://sms/inbox");
     }
 
     private void sendSMS(String phoneNumber, String message) {
@@ -131,23 +94,23 @@ public class ScrollingActivity extends AppCompatActivity {
                 switch (getResultCode())
                 {
                     case Activity.RESULT_OK:
-                        Snackbar.make(fab, "Sent", Snackbar.LENGTH_LONG)
+                        Snackbar.make(fab, R.string.sent_hint, Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                         break;
                     case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
-                        Snackbar.make(fab, "Generic failure", Snackbar.LENGTH_LONG)
+                        Snackbar.make(fab, R.string.failure_hint, Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                         break;
                     case SmsManager.RESULT_ERROR_NO_SERVICE:
-                        Snackbar.make(fab, "No service", Snackbar.LENGTH_LONG)
+                        Snackbar.make(fab, R.string.no_service_hint, Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                         break;
                     case SmsManager.RESULT_ERROR_NULL_PDU:
-                        Snackbar.make(fab, "Null PDU", Snackbar.LENGTH_LONG)
+                        Snackbar.make(fab, R.string.null_pdu_hint, Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                         break;
                     case SmsManager.RESULT_ERROR_RADIO_OFF:
-                        Snackbar.make(fab, "Radio off", Snackbar.LENGTH_LONG)
+                        Snackbar.make(fab, R.string.radio_off_hint, Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                         break;
                 }
@@ -161,11 +124,11 @@ public class ScrollingActivity extends AppCompatActivity {
                 switch (getResultCode())
                 {
                     case Activity.RESULT_OK:
-                        Snackbar.make(fab, "SMS delivered", Snackbar.LENGTH_LONG)
+                        Snackbar.make(fab, R.string.sms_delivered_hint, Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                         break;
                     case Activity.RESULT_CANCELED:
-                        Snackbar.make(fab, "SMS not delivered", Snackbar.LENGTH_LONG)
+                        Snackbar.make(fab, R.string.not_delivered_hint, Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                         break;
                 }
@@ -197,12 +160,12 @@ public class ScrollingActivity extends AppCompatActivity {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
             final EditText input = new EditText(this);
-            builder.setTitle("Send in " + String.valueOf(parts.size()) + " messages");
+            builder.setTitle(getString(R.string.send_in_x_msg, String.valueOf(parts.size())));
             input.setInputType(InputType.TYPE_CLASS_PHONE);
             input.setText(pref.getString("send_to", "#100*"));
             builder.setView(input);
 
-            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            builder.setPositiveButton(R.string.ok_btn, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     String phone = input.getText().toString();
@@ -210,7 +173,7 @@ public class ScrollingActivity extends AppCompatActivity {
                     sendSMS(phone, message);
                 }
             });
-            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            builder.setNegativeButton(R.string.cancel_btn, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.cancel();
@@ -219,5 +182,71 @@ public class ScrollingActivity extends AppCompatActivity {
 
             builder.show();
         }
+    }
+
+    public static ScrollingActivity instance() {
+        return inst;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        inst = this;
+    }
+
+    private void readSms(String box) {
+        ContentResolver contentResolver = getContentResolver();
+        Cursor smsInboxCursor = contentResolver.query(Uri.parse(box), null, null, null, null);
+        int indexBody = smsInboxCursor.getColumnIndex("body");
+        int indexAddress = smsInboxCursor.getColumnIndex("address");
+        int indexDate = smsInboxCursor.getColumnIndex("date");
+        if (!(indexBody < 0 || !smsInboxCursor.moveToFirst())) {
+            int counter = 0;
+            int maxim = pref.getInt("display_limit", 25);
+            do {
+                counter++;
+                Date date = new Date(smsInboxCursor.getLong(indexDate));
+                textView.append(
+                        smsInboxCursor.getString(indexAddress) + " " +
+                                DateFormat.format(getString(R.string.date_format), date).toString() +
+                                "\n"
+                );
+                if (smsInboxCursor.getString(indexBody).startsWith("data:image/jpeg;base64,")) {
+                    textView.append("  ");
+                    CharSequence sp = textView.getText();
+                    SpannableStringBuilder ssb = new SpannableStringBuilder(sp);
+                    String coded = smsInboxCursor.getString(indexBody);
+                    byte[] decodedString = Base64.decode(coded.substring(coded.indexOf(",") + 1), Base64.DEFAULT);
+
+                    Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                    if (decodedByte == null) {
+                        textView.append(getString(R.string.problem_image));
+                    } else {
+                        Drawable dr = new BitmapDrawable(getResources(), decodedByte);
+                        dr.setBounds(0, 0, 2*decodedByte.getWidth(), 2*decodedByte.getHeight());
+
+                        ImageSpan isp = new ImageSpan(dr);
+                        ssb.setSpan(
+                                isp,
+                                sp.length()-2,
+                                sp.length()-1,
+                                Spannable.SPAN_INCLUSIVE_INCLUSIVE
+                        );
+                        textView.setText(ssb);
+                    }
+                } else {
+                    textView.append(smsInboxCursor.getString(indexBody));
+                }
+                textView.append("\n\n");
+            } while (smsInboxCursor.moveToNext() && counter <= maxim);
+        }
+    }
+
+    public void updateInbox() {
+        readSms("content://sms/inbox");
+    }
+
+    public void updateOutbox() {
+        readSms("content://sms/sent");
     }
 }
