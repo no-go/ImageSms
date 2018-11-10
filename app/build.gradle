@@ -5,9 +5,10 @@ android {
     defaultConfig {
         applicationId "click.dummer.imagesms"
         minSdkVersion 16
+        //upload similar to offlineTranslator
         targetSdkVersion 22
-        versionCode 10
-        versionName "1.0"
+        versionCode 11
+        versionName "1.1"
     }
     buildTypes {
         release {

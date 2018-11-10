@@ -1,11 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <ListPreference
+        android:key="quality"
+        android:defaultValue="50"
+        android:entries="@array/quality_names"
+        android:entryValues="@array/quality_values"
+        android:summary="@string/quality_summary"
+        android:title="@string/quality" />
+
+    <EditTextPreference
+        android:key="display_limit"
+        android:inputType="numberDecimal"
+        android:defaultValue="25"
+        android:numeric="integer"
+        android:title="@string/display_limit" />
+
     <EditTextPreference
         android:key="send_to"
         android:inputType="phone"
         android:defaultValue="#100*"
-        android:title="@string/send_to"
-        />
+        android:title="@string/send_to" />
 
 </PreferenceScreen>

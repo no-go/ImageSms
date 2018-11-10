@@ -1,15 +1,42 @@
-# Image SMS (prove of concept)
+# Image SMS
 
-Image SMS uses long text SMS to send a very small picture. It uses base64 technique (= email attachment)
-to transfer data. Use *Settings* to set the phone number of the receiver!
+Image SMS uses long text SMS to send a very small picture (NOT MMS). It uses
+base64 technique (similar to email attachments) to transfer data. It is
+a bare metal App and Open Source on github. If you
+want to enlarge the features, you have to do it by your own.
 
-## Screenshot
+## Permissions
 
-![Screenshot](picture.jpg)
+I love my privacy. Thus I love apps with only a couple of permissions. Image SMS only access on:
+
+- SMS (read and send)
+- Camera
+
+Image SMS does not use access to:
+
+- Files
+- Contacts
+- Internet
+
+This may be strange to you, because you need a phone number and there is no contact selection.
+
+## Screenshots
+
+![Screenshot 0](img/picture0.jpg)
+
+![Screenshot 1](img/picture1.jpg)
+
+![Screenshot 2](img/picture2.jpg)
+
+![Screenshot 3](img/picture3.jpg)
 
 ## Get the App
 
 Get APK from [here](https://raw.githubusercontent.com/no-go/ImageSms/master/app/release/click.dummer.imagesms.apk).
+
+## todo: CBC ciphertext stealing
+
+There will be a small feature in the settings menu to use CBC ciphertext stealing and set initialvector and key.
 
 ## License
 
@@ -33,3 +60,24 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to [http://unlicense.org](http://unlicense.org)
+
+## Privacy Policy
+
+### Personal information.
+
+Personal information is data that can be used to uniquely identify or contact a
+single person. I DO NOT collect, transmit, store or use any personal information while you use this app.
+
+### Non-Personal information.
+
+I DO NOT collect non-personal information like user's behavior:
+
+ -  to solve App problems
+ -  to show personalized ads
+
+The Google Play Store collects non-personal information such as the data of install (country and equipment).
+I did not add any Google or ad keys or codes for marketing feedback, Ads or payment systems!
+
+### Privacy Questions.
+
+If you have any questions or concerns about my Privacy Policy or data processing, please contact me.

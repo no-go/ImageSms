@@ -1,10 +1,12 @@
 package click.dummer.imagesms;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -25,6 +27,8 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.telephony.SmsManager;
+import android.telephony.gsm.SmsMessage;
+import android.text.InputType;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.format.DateFormat;
@@ -35,8 +39,10 @@ import android.view.Surface;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -44,15 +50,15 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class ScrollingActivity extends AppCompatActivity {
+    private static ScrollingActivity inst;
     private TextView textView;
     private FloatingActionButton fab;
     private SmsManager smsManager = SmsManager.getDefault();
     public static SharedPreferences pref;
+    private String message;
+    private ArrayList<String> parts;
 
     private static final int CAMERA_REQUEST = 1888;
-    private Camera mCamera;
-    private CameraPreview mPreview;
-    private int cameraId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,62 +75,53 @@ public class ScrollingActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                //File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-                //File output = new File(dir, "CameraContentDemo.jpeg");
-                //cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(output));
                 startActivityForResult(cameraIntent, CAMERA_REQUEST);
             }
         });
 
-        ContentResolver contentResolver = getContentResolver();
-        Cursor smsInboxCursor = contentResolver.query(Uri.parse("content://sms/inbox"), null, null, null, null);
-        int indexBody = smsInboxCursor.getColumnIndex("body");
-        int indexAddress = smsInboxCursor.getColumnIndex("address");
-        int indexDate = smsInboxCursor.getColumnIndex("date");
-        if (!(indexBody < 0 || !smsInboxCursor.moveToFirst())) {
-            do {
-                Date date = new Date(smsInboxCursor.getLong(indexDate));
-                textView.append(
-                        smsInboxCursor.getString(indexAddress) + " " +
-                        DateFormat.format("dd.MM.yyyy HH:mm", date).toString() +
-                        "\n"
-                );
-                if (smsInboxCursor.getString(indexBody).startsWith("data:image")) {
-                    textView.append("  ");
-                    CharSequence sp = textView.getText();
-                    SpannableStringBuilder ssb = new SpannableStringBuilder(sp);
-                    String coded = smsInboxCursor.getString(indexBody);
-                    byte[] decodedString = Base64.decode(coded.substring(coded.indexOf(",") + 1), Base64.DEFAULT);
-
-                    Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                    Drawable dr = new BitmapDrawable(getResources(), decodedByte);
-                    dr.setBounds(0, 0, 2*decodedByte.getWidth(), 2*decodedByte.getHeight());
-
-                    ImageSpan isp = new ImageSpan(dr);
-                    ssb.setSpan(
-                            isp,
-                            sp.length()-2,
-                            sp.length()-1,
-                            Spannable.SPAN_INCLUSIVE_INCLUSIVE
-                    );
-                    textView.setText(ssb);
-                } else {
-                    textView.append(smsInboxCursor.getString(indexBody));
-                }
-                textView.append("\n\n");
-            } while (smsInboxCursor.moveToNext());
-
+        if (!pref.contains("imgscale")) {
+            pref.edit().putFloat("imgscale", 3.0f).commit();
         }
+
+        readSms("content://sms/inbox");
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return true;
+    }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        //mCamera = getCameraInstance();
-        //mPreview = new CameraPreview(this, mCamera);
-        //FrameLayout preview = (FrameLayout) findViewById(R.id.preview);
-        //preview.addView(mPreview);
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_settings) {
+            Intent intent = new Intent(ScrollingActivity.this, PreferencesActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+            startActivity(intent);
+            return true;
+        } else if (id == R.id.action_take_pic) {
+            fab.callOnClick();
+            return true;
+        } else if (id == R.id.action_read_inbox) {
+            updateInbox();
+            return true;
+        } else if (id == R.id.action_read_outbox) {
+            updateOutbox();
+            return true;
+        } else if (id == R.id.action_bigger) {
+            float imgscale = pref.getFloat("imgscale", 3.0f) * 1.2f;
+            pref.edit().putFloat("imgscale", imgscale).apply();
+            updateInbox();
+            return true;
+        } else if (id == R.id.action_smaller) {
+            float imgscale = pref.getFloat("imgscale", 3.0f) * 0.9f;
+            pref.edit().putFloat("imgscale", imgscale).apply();
+            updateInbox();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void sendSMS(String phoneNumber, String message) {
@@ -141,23 +138,23 @@ public class ScrollingActivity extends AppCompatActivity {
                 switch (getResultCode())
                 {
                     case Activity.RESULT_OK:
-                        Snackbar.make(fab, getString(R.string.sent), Snackbar.LENGTH_LONG)
+                        Snackbar.make(fab, R.string.sent_hint, Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                         break;
                     case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
-                        Snackbar.make(fab, "Generic failure", Snackbar.LENGTH_LONG)
+                        Snackbar.make(fab, R.string.failure_hint, Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                         break;
                     case SmsManager.RESULT_ERROR_NO_SERVICE:
-                        Snackbar.make(fab, "No service", Snackbar.LENGTH_LONG)
+                        Snackbar.make(fab, R.string.no_service_hint, Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                         break;
                     case SmsManager.RESULT_ERROR_NULL_PDU:
-                        Snackbar.make(fab, "Null PDU", Snackbar.LENGTH_LONG)
+                        Snackbar.make(fab, R.string.null_pdu_hint, Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                         break;
                     case SmsManager.RESULT_ERROR_RADIO_OFF:
-                        Snackbar.make(fab, "Radio off", Snackbar.LENGTH_LONG)
+                        Snackbar.make(fab, R.string.radio_off_hint, Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                         break;
                 }
@@ -171,81 +168,21 @@ public class ScrollingActivity extends AppCompatActivity {
                 switch (getResultCode())
                 {
                     case Activity.RESULT_OK:
-                        Snackbar.make(fab, "SMS delivered", Snackbar.LENGTH_LONG)
+                        Snackbar.make(fab, R.string.sms_delivered_hint, Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                         break;
                     case Activity.RESULT_CANCELED:
-                        Snackbar.make(fab, "SMS not delivered", Snackbar.LENGTH_LONG)
+                        Snackbar.make(fab, R.string.not_delivered_hint, Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                         break;
                 }
             }
         }, new IntentFilter(DELIVERED));
-        ArrayList<String> parts = smsManager.divideMessage(message);
         ArrayList<PendingIntent> sentPIs = new ArrayList<>();
         ArrayList<PendingIntent> deliveredPIs = new ArrayList<>();
         sentPIs.add(sentPI);
         deliveredPIs.add(deliveredPI);
         smsManager.sendMultipartTextMessage(phoneNumber, null, parts, sentPIs, deliveredPIs);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_scrolling, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.action_settings) {
-            Intent intent = new Intent(ScrollingActivity.this, PreferencesActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-            startActivity(intent);
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    public Camera getCameraInstance() {
-        Camera c = null;
-        try {
-            int numberOfCameras = Camera.getNumberOfCameras();
-            for (int i = 0; i < numberOfCameras; i++) {
-                Camera.CameraInfo info = new Camera.CameraInfo();
-                Camera.getCameraInfo(i, info);
-                if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
-                    cameraId = i;
-                    c = Camera.open(i);
-                    c.setDisplayOrientation(ori());
-                    break;
-                }
-            }
-        } catch (Exception e) {}
-        return c;
-    }
-
-    public int ori() {
-        android.hardware.Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
-        android.hardware.Camera.getCameraInfo(cameraId, info);
-        int rotation = getWindowManager().getDefaultDisplay().getRotation();
-        int degrees = 0;
-        switch (rotation) {
-            case Surface.ROTATION_0: degrees = 0; break;
-            case Surface.ROTATION_90: degrees = 90; break;
-            case Surface.ROTATION_180: degrees = 180; break;
-            case Surface.ROTATION_270: degrees = 270; break;
-        }
-
-        int result;
-        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-            result = (info.orientation + degrees) % 360;
-            result = (360 - result) % 360;  // compensate the mirror
-        } else {  // back-facing
-            result = (info.orientation - degrees + 360) % 360;
-        }
-        return result;
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -257,12 +194,113 @@ public class ScrollingActivity extends AppCompatActivity {
                     photo.getHeight()/2,
                     true
             );
-
+            int quality = Integer.parseInt(pref.getString("quality", "50"));
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            mutableBitmap.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream);
+            mutableBitmap.compress(Bitmap.CompressFormat.JPEG, quality, byteArrayOutputStream);
 
-            String message = "data:image/jpeg;base64," + Base64.encodeToString(byteArrayOutputStream.toByteArray(), Base64.NO_WRAP);
-            sendSMS(pref.getString("send_to", "#100*"), message);
+            message = "data:image/jpeg;base64," + Base64.encodeToString(byteArrayOutputStream.toByteArray(), Base64.NO_WRAP);
+            parts = smsManager.divideMessage(message);
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+            final EditText input = new EditText(this);
+            builder.setTitle(getString(R.string.send_in_x_msg, String.valueOf(parts.size())));
+            input.setInputType(InputType.TYPE_CLASS_PHONE);
+            input.setText(pref.getString("send_to", "#100*"));
+            builder.setView(input);
+
+            builder.setPositiveButton(R.string.ok_btn, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    String phone = input.getText().toString();
+                    pref.edit().putString("send_to", phone).apply();
+                    sendSMS(phone, message);
+                }
+            });
+            builder.setNegativeButton(R.string.cancel_btn, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+
+            builder.show();
         }
+    }
+
+    public static ScrollingActivity instance() {
+        return inst;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        inst = this;
+    }
+
+    private void readSms(String box) {
+        ContentResolver contentResolver = getContentResolver();
+        Cursor smsInboxCursor = contentResolver.query(Uri.parse(box), null, null, null, null);
+        int indexBody = smsInboxCursor.getColumnIndex("body");
+        int indexAddress = smsInboxCursor.getColumnIndex("address");
+        int indexDate = smsInboxCursor.getColumnIndex("date");
+        if (!(indexBody < 0 || !smsInboxCursor.moveToFirst())) {
+            int counter = 0;
+            String str = pref.getString("display_limit", "25");
+            if (str.equals("")) str = "25";
+            int maxim = Integer.parseInt(str);
+            float imgscale = pref.getFloat("imgscale", 3.0f);
+            do {
+                counter++;
+                Date date = new Date(smsInboxCursor.getLong(indexDate));
+                textView.append(
+                        smsInboxCursor.getString(indexAddress) + "\n" +
+                        DateFormat.format(getString(R.string.date_format), date).toString() + "\n"
+                );
+                if (smsInboxCursor.getString(indexBody).startsWith("data:image/jpeg;base64,")) {
+                    textView.append("  ");
+                    CharSequence sp = textView.getText();
+                    SpannableStringBuilder ssb = new SpannableStringBuilder(sp);
+                    String coded = smsInboxCursor.getString(indexBody);
+                    byte[] decodedString = Base64.decode(coded.substring(coded.indexOf(",") + 1), Base64.DEFAULT);
+
+                    Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                    if (decodedByte == null) {
+                        textView.append(getString(R.string.problem_image));
+                    } else {
+                        Drawable dr = new BitmapDrawable(getResources(), decodedByte);
+                        dr.setBounds(
+                                0,
+                                0,
+                                Math.round(imgscale*decodedByte.getWidth()),
+                                Math.round(imgscale*decodedByte.getHeight())
+                        );
+
+                        ImageSpan isp = new ImageSpan(dr);
+                        ssb.setSpan(
+                                isp,
+                                sp.length()-2,
+                                sp.length()-1,
+                                Spannable.SPAN_INCLUSIVE_INCLUSIVE
+                        );
+                        textView.setText(ssb);
+                    }
+                } else {
+                    textView.append(smsInboxCursor.getString(indexBody));
+                }
+                textView.append("\n\n");
+            } while (smsInboxCursor.moveToNext() && counter < maxim);
+        }
+        Toast.makeText(getApplicationContext(), getString(R.string.freshup), Toast.LENGTH_SHORT).show();
+    }
+
+    public void updateInbox() {
+        textView.setText("");
+        readSms("content://sms/inbox");
+    }
+
+    public void updateOutbox() {
+        textView.setText("");
+        readSms("content://sms/sent");
     }
 }
