@@ -34,8 +34,9 @@ This may be strange to you, because you need a phone number and there is no cont
 
 Get APK from [here](https://raw.githubusercontent.com/no-go/ImageSms/master/app/release/click.dummer.imagesms.apk).
 
-## todo: CBC ciphertext stealing
+## NOT todo: CBC ciphertext stealing
 
+THIS FEATURE MAKES SENSE, IF THE MESSAGE IS REALY LONG (filling random?).
 There will be a small feature in the settings menu to use CBC ciphertext stealing and set initialvector and key.
 
 ## License
