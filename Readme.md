@@ -22,17 +22,19 @@ This may be strange to you, because you need a phone number and there is no cont
 
 ## Screenshots
 
-![Screenshot 0](img/picture0.jpg)
+![Screenshot 0](metadata/en-US/images/phoneScreenshots/0.jpg)
 
-![Screenshot 1](img/picture1.jpg)
+![Screenshot 1](metadata/en-US/images/phoneScreenshots/1.jpg)
 
-![Screenshot 2](img/picture2.jpg)
+![Screenshot 2](metadata/en-US/images/phoneScreenshots/2.jpg)
 
-![Screenshot 3](img/picture3.jpg)
+![Screenshot 3](metadata/en-US/images/phoneScreenshots/3.jpg)
 
 ## Get the App
 
-Get APK from [here](https://raw.githubusercontent.com/no-go/ImageSms/master/app/release/click.dummer.imagesms.apk).
+- as [APK file](https://raw.githubusercontent.com/no-go/ImageSms/master/app/release/click.dummer.imagesms.apk)
+- from [Google Play](https://play.google.com/store/apps/details?id=click.dummer.imagesms)
+- or from [f-droid](https://f-droid.org/repository/browse/?fdid=click.dummer.imagesms)
 
 ## NOT todo: CBC ciphertext stealing
 

@@ -1,0 +1,14 @@
+Image SMS benutzt lange/mehrere SMS Nachrichten um kleine Fotos zu versenden. Es werden keine MMS versendet und nicht das Internet genutzt. Es verwendet die base64-Technik, wie sie auch in Emails genutzt wird. Die App ist recht simpel zu bedienen und freier Quellcode bei github. Sollte man also Programmierer sein und mehr Funktionen wollen, dann kann man diese selbst hinzufügen!
+
+Ich liebe meine Privatsphäre. Deswegen bin ich kein Freund von Apps, welche Unmengen an Berechtigungen verlangen. Daher ist Image SMS auf das nötigste beschränkt:
+
+👉 SMS lesen und senden
+👉 Kamera: Vorschau Bild
+
+Image SMS braucht also keinen Zugriff auf:
+
+👉 Dateien
+👉 Kontakte
+👉 Internet
+
+Das hat allerdings auch zur Folge, dass man keine Bild-Dateien auswählen und senden kann oder einen Kontakt auswählen kann. Die App nutzt deswegen überall Telefonnummern.

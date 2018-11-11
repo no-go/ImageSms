@@ -23,6 +23,7 @@
     <string name="freshup">Fresh up!</string>
     <string name="quality">Quality</string>
     <string name="quality_summary">Better quality results in longer (more) SMS.</string>
+    <string name="website">website</string>
 
     <string-array name="quality_names">
         <item>20% terrible</item>

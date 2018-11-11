@@ -63,6 +63,8 @@ public class ScrollingActivity extends AppCompatActivity {
     private ArrayList<PendingIntent> sentPIs;
     private ArrayList<PendingIntent> deliveredPIs;
 
+    public static final String PROJECT_LINK = "https://github.com/no-go/ImageSms";
+
     private static final int CAMERA_REQUEST = 1888;
     private static final int READ_PERMISSION_REQ = 12;
     private static final int WRITE_PERMISSION_REQ = 13;
@@ -122,6 +124,10 @@ public class ScrollingActivity extends AppCompatActivity {
             return true;
         } else if (id == R.id.action_read_outbox) {
             updateOutbox();
+            return true;
+        } else if (id == R.id.action_website) {
+            Intent intentProj= new Intent(Intent.ACTION_VIEW, Uri.parse(PROJECT_LINK));
+            startActivity(intentProj);
             return true;
         } else if (id == R.id.action_bigger) {
             float imgscale = pref.getFloat("imgscale", 3.0f) * 1.2f;

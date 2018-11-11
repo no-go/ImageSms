@@ -24,6 +24,7 @@
     <string name="freshup">SMS eingelesen</string>
     <string name="quality">Qualität</string>
     <string name="quality_summary">Bei einer höheren Qualität werden länger (also mehr) SMS versendet.</string>
+    <string name="website">Webseite</string>
 
     <string-array name="quality_names">
         <item>20% furchtbar</item>
