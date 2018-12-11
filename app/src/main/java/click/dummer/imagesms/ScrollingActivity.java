@@ -98,7 +98,54 @@ public class ScrollingActivity extends AppCompatActivity {
             pref.edit().putFloat("imgscale", 3.0f).commit();
         }
 
-        readSms("content://sms/inbox");
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        String type = intent.getType();
+
+        if (Intent.ACTION_SEND.equals(action) && type != null) {
+            if ("text/plain".equals(type)) {
+                String coded = intent.getStringExtra(Intent.EXTRA_TEXT);
+                if (coded != null) {
+                    CharSequence sp = "  ";
+                    SpannableStringBuilder ssb = new SpannableStringBuilder(sp);
+                    byte[] decodedString = null;
+                    float imgscale = pref.getFloat("imgscale", 3.0f);
+
+                    try {
+                        decodedString = Base64.decode(coded.substring(coded.indexOf(",") + 1), Base64.DEFAULT);
+
+                        Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                        if (decodedByte == null) {
+                            textView.setText(getString(R.string.problem_image));
+                        } else {
+                            Drawable dr = new BitmapDrawable(getResources(), decodedByte);
+                            dr.setBounds(
+                                    0,
+                                    0,
+                                    Math.round(imgscale*decodedByte.getWidth()),
+                                    Math.round(imgscale*decodedByte.getHeight())
+                            );
+
+                            ImageSpan isp = new ImageSpan(dr);
+                            ssb.setSpan(
+                                    isp,
+                                    sp.length()-2,
+                                    sp.length()-1,
+                                    Spannable.SPAN_INCLUSIVE_INCLUSIVE
+                            );
+                            textView.setText(ssb);
+                        }
+
+                    } catch (IllegalArgumentException e) {
+                        textView.setText(getString(R.string.problem_image));
+                    }
+
+                }
+            }
+
+        } else {
+            readSms("content://sms/inbox");
+        }
     }
 
     @Override
@@ -278,28 +325,35 @@ public class ScrollingActivity extends AppCompatActivity {
                         CharSequence sp = textView.getText();
                         SpannableStringBuilder ssb = new SpannableStringBuilder(sp);
                         String coded = smsInboxCursor.getString(indexBody);
-                        byte[] decodedString = Base64.decode(coded.substring(coded.indexOf(",") + 1), Base64.DEFAULT);
+                        byte[] decodedString;
 
-                        Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                        if (decodedByte == null) {
+                        try {
+                            decodedString = Base64.decode(coded.substring(coded.indexOf(",") + 1), Base64.DEFAULT);
+
+                            Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                            if (decodedByte == null) {
+                                textView.append(getString(R.string.problem_image));
+                            } else {
+                                Drawable dr = new BitmapDrawable(getResources(), decodedByte);
+                                dr.setBounds(
+                                        0,
+                                        0,
+                                        Math.round(imgscale*decodedByte.getWidth()),
+                                        Math.round(imgscale*decodedByte.getHeight())
+                                );
+
+                                ImageSpan isp = new ImageSpan(dr);
+                                ssb.setSpan(
+                                        isp,
+                                        sp.length()-2,
+                                        sp.length()-1,
+                                        Spannable.SPAN_INCLUSIVE_INCLUSIVE
+                                );
+                                textView.setText(ssb);
+                            }
+
+                        } catch (IllegalArgumentException e) {
                             textView.append(getString(R.string.problem_image));
-                        } else {
-                            Drawable dr = new BitmapDrawable(getResources(), decodedByte);
-                            dr.setBounds(
-                                    0,
-                                    0,
-                                    Math.round(imgscale*decodedByte.getWidth()),
-                                    Math.round(imgscale*decodedByte.getHeight())
-                            );
-
-                            ImageSpan isp = new ImageSpan(dr);
-                            ssb.setSpan(
-                                    isp,
-                                    sp.length()-2,
-                                    sp.length()-1,
-                                    Spannable.SPAN_INCLUSIVE_INCLUSIVE
-                            );
-                            textView.setText(ssb);
                         }
                     } else {
                         textView.append(smsInboxCursor.getString(indexBody));
