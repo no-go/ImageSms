@@ -26,16 +26,12 @@ public final class PermissionUtils {
         return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED;
     }
 
-    public static boolean writeGranted(Context context) {
-        return checkPermission(context, Manifest.permission.SEND_SMS);
-    }
-
     public static boolean camGranted(Context context) {
         return checkPermission(context, Manifest.permission.CAMERA);
     }
 
     public static boolean readGranted(Context context) {
-        return (checkPermission(context, Manifest.permission.READ_SMS) && checkPermission(context, Manifest.permission.RECEIVE_SMS));
+        return (checkPermission(context, Manifest.permission.READ_SMS));
     }
 
     public static void requestPermissions(Object o, int permissionId, String... permissions) {

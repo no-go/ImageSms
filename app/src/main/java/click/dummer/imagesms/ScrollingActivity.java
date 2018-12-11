@@ -20,6 +20,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
 import android.net.Uri;
+import android.nfc.Tag;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -58,6 +60,7 @@ public class ScrollingActivity extends AppCompatActivity {
     private SmsManager smsManager = SmsManager.getDefault();
     public static SharedPreferences pref;
 
+    private String message;
     private ArrayList<String> parts;
     private String phone;
     private ArrayList<PendingIntent> sentPIs;
@@ -67,7 +70,6 @@ public class ScrollingActivity extends AppCompatActivity {
 
     private static final int CAMERA_REQUEST = 1888;
     private static final int READ_PERMISSION_REQ = 12;
-    private static final int WRITE_PERMISSION_REQ = 13;
     private static final int CAM_PERMISSION_REQ = 14;
 
     @Override
@@ -202,12 +204,21 @@ public class ScrollingActivity extends AppCompatActivity {
         sentPIs.add(sentPI);
         deliveredPIs.add(deliveredPI);
 
-        if (PermissionUtils.writeGranted(this)) {
-            smsManager.sendMultipartTextMessage(phone, null, parts, sentPIs, deliveredPIs);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            Intent sendIntent = new Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:" + phone));
+            //sendIntent.setType("text/plain");
+            sendIntent.putExtra("sms_body", message);
+            startActivity(sendIntent);
+
         } else {
-            String[] permissions = new String[]{Manifest.permission.SEND_SMS};
-            PermissionUtils.requestPermissions(this, WRITE_PERMISSION_REQ, permissions);
+            Intent smsIntent = new Intent(android.content.Intent.ACTION_VIEW);
+            smsIntent.setType("vnd.android-dir/mms-sms");
+            smsIntent.putExtra("address", phone);
+            smsIntent.putExtra(Intent.EXTRA_TEXT, message);
+            startActivity(smsIntent);
         }
+
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -223,7 +234,7 @@ public class ScrollingActivity extends AppCompatActivity {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             mutableBitmap.compress(Bitmap.CompressFormat.JPEG, quality, byteArrayOutputStream);
 
-            String message = "data:image/jpeg;base64," + Base64.encodeToString(byteArrayOutputStream.toByteArray(), Base64.NO_WRAP);
+            message = "data:image/jpeg;base64," + Base64.encodeToString(byteArrayOutputStream.toByteArray(), Base64.NO_WRAP);
             parts = smsManager.divideMessage(message);
 
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -278,28 +289,35 @@ public class ScrollingActivity extends AppCompatActivity {
                         CharSequence sp = textView.getText();
                         SpannableStringBuilder ssb = new SpannableStringBuilder(sp);
                         String coded = smsInboxCursor.getString(indexBody);
-                        byte[] decodedString = Base64.decode(coded.substring(coded.indexOf(",") + 1), Base64.DEFAULT);
+                        byte[] decodedString = null;
 
-                        Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                        if (decodedByte == null) {
+                        try {
+                            decodedString = Base64.decode(coded.substring(coded.indexOf(",") + 1), Base64.DEFAULT);
+
+                            Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                            if (decodedByte == null) {
+                                textView.append(getString(R.string.problem_image));
+                            } else {
+                                Drawable dr = new BitmapDrawable(getResources(), decodedByte);
+                                dr.setBounds(
+                                        0,
+                                        0,
+                                        Math.round(imgscale*decodedByte.getWidth()),
+                                        Math.round(imgscale*decodedByte.getHeight())
+                                );
+
+                                ImageSpan isp = new ImageSpan(dr);
+                                ssb.setSpan(
+                                        isp,
+                                        sp.length()-2,
+                                        sp.length()-1,
+                                        Spannable.SPAN_INCLUSIVE_INCLUSIVE
+                                );
+                                textView.setText(ssb);
+                            }
+
+                        } catch (IllegalArgumentException e) {
                             textView.append(getString(R.string.problem_image));
-                        } else {
-                            Drawable dr = new BitmapDrawable(getResources(), decodedByte);
-                            dr.setBounds(
-                                    0,
-                                    0,
-                                    Math.round(imgscale*decodedByte.getWidth()),
-                                    Math.round(imgscale*decodedByte.getHeight())
-                            );
-
-                            ImageSpan isp = new ImageSpan(dr);
-                            ssb.setSpan(
-                                    isp,
-                                    sp.length()-2,
-                                    sp.length()-1,
-                                    Spannable.SPAN_INCLUSIVE_INCLUSIVE
-                            );
-                            textView.setText(ssb);
                         }
                     } else {
                         textView.append(smsInboxCursor.getString(indexBody));
@@ -341,14 +359,6 @@ public class ScrollingActivity extends AppCompatActivity {
                 granted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
                 if (granted) {
                     readSms("content://sms/inbox");
-                } else {
-                    //nobody knows what to do
-                }
-                break;
-            case WRITE_PERMISSION_REQ:
-                granted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
-                if (granted) {
-                    smsManager.sendMultipartTextMessage(phone, null, parts, sentPIs, deliveredPIs);
                 } else {
                     //nobody knows what to do
                 }
