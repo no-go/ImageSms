@@ -9,6 +9,11 @@
         android:summary="@string/quality_summary"
         android:title="@string/quality" />
 
+    <CheckBoxPreference
+        android:key="half"
+        android:defaultValue="true"
+        android:title="@string/half_size" />
+
     <EditTextPreference
         android:key="display_limit"
         android:inputType="numberDecimal"

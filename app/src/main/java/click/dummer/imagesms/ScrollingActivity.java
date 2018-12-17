@@ -97,6 +97,9 @@ public class ScrollingActivity extends AppCompatActivity {
         if (!pref.contains("imgscale")) {
             pref.edit().putFloat("imgscale", 3.0f).commit();
         }
+        if (!pref.contains("half")) {
+            pref.edit().putBoolean("half", true).commit();
+        }
 
         Intent intent = getIntent();
         String action = intent.getAction();
@@ -260,10 +263,13 @@ public class ScrollingActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK) {
             Bitmap photo = (Bitmap) data.getExtras().get("data");
+            int sca = 1;
+            if (pref.getBoolean("half", true)) sca = 2;
+
             Bitmap mutableBitmap = Bitmap.createScaledBitmap(
                     photo,
-                    photo.getWidth()/2,
-                    photo.getHeight()/2,
+                    photo.getWidth()/sca,
+                    photo.getHeight()/sca,
                     true
             );
             int quality = Integer.parseInt(pref.getString("quality", "50"));
