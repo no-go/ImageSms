@@ -33,7 +33,6 @@ This may be strange to you, because you need a phone number and there is no cont
 ## Get the App
 
 - as [APK file](https://raw.githubusercontent.com/no-go/ImageSms/master/app/release/click.dummer.imagesms.apk)
-- from [Google Play](https://play.google.com/store/apps/details?id=click.dummer.imagesms)
 - or from [f-droid](https://f-droid.org/repository/browse/?fdid=click.dummer.imagesms)
 
 ## NOT todo: CBC ciphertext stealing
