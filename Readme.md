@@ -20,6 +20,12 @@ Image SMS does not use access to:
 
 This may be strange to you, because you need a phone number and there is no contact selection.
 
+## Get the App
+
+- as [APK file](https://raw.githubusercontent.com/no-go/ImageSms/master/app/release/click.dummer.imagesms.apk)
+- or from <a href="https://f-droid.org/packages/click.dummer.imagesms/"><img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" alt="Get it on F-Droid" height="30" align="absmiddle" /></a>
+
+
 ## Screenshots
 
 ![Screenshot 0](metadata/en-US/images/phoneScreenshots/0.jpg)
@@ -29,11 +35,6 @@ This may be strange to you, because you need a phone number and there is no cont
 ![Screenshot 2](metadata/en-US/images/phoneScreenshots/2.jpg)
 
 ![Screenshot 3](metadata/en-US/images/phoneScreenshots/3.jpg)
-
-## Get the App
-
-- as [APK file](https://raw.githubusercontent.com/no-go/ImageSms/master/app/release/click.dummer.imagesms.apk)
-- or from [f-droid](https://f-droid.org/repository/browse/?fdid=click.dummer.imagesms)
 
 ## NOT todo: CBC ciphertext stealing
 
