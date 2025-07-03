@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Image SMS</string>
+    <string name="app_name">imageSMS</string>
     <string name="read_in">Eingang</string>
     <string name="read_out">Gesendet</string>
     <string name="take_pic">Photo machen</string>
@@ -23,25 +23,50 @@
     <string name="img_down">- kleiner</string>
     <string name="freshup">SMS eingelesen</string>
     <string name="quality">Qualität</string>
-    <string name="quality_summary">Bei einer höheren Qualität werden länger (also mehr) SMS versendet.</string>
-    <string name="website">Webseite</string>
-    <string name="half_size">halbe Größe</string>
+    <string name="quality_summary">Höherer Wert führt zu mehr SMS.</string>
+    <string name="website">Webseite des Entwicklers</string>
+    <string name="scale">Bildauflösung</string>
+    <string name="prefgif">nutze GIF, und nicht WEBP</string>
+    <string name="scale_summary">Geringere Auflösung führt zu weniger SMS.</string>
+    <string name="add_some_text_here">optionaler SMS Text...</string>
+
+    <string-array name="scale_names">
+        <item>Zehntel</item>
+        <item>Viertel</item>
+        <item>Drittel</item>
+        <item>Hälfte</item>
+        <item>75%</item>
+        <item>komplett</item>
+    </string-array>
+
+    <string-array name="scale_values">
+        <item>10</item>
+        <item>25</item>
+        <item>33</item>
+        <item>50</item>
+        <item>75</item>
+        <item>100</item>
+    </string-array>
 
     <string-array name="quality_names">
-        <item>20% furchtbar</item>
+        <item>10% fragwürdig</item>
+        <item>20% grausam</item>
         <item>30% häßlich</item>
-        <item>50% normal</item>
+        <item>50% default</item>
         <item>60% ok</item>
         <item>75% gut</item>
+        <item>85% sehr gut</item>
         <item>90% super</item>
     </string-array>
 
     <string-array name="quality_values">
+        <item>10</item>
         <item>20</item>
         <item>30</item>
         <item>50</item>
         <item>60</item>
         <item>75</item>
+        <item>85</item>
         <item>90</item>
     </string-array>
 

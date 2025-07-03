@@ -1,5 +1,6 @@
+
 <resources>
-    <string name="app_name">Image SMS</string>
+    <string name="app_name">imageSMS</string>
     <string name="read_in">read inbox</string>
     <string name="read_out">read sent</string>
     <string name="take_pic">take a picture</string>
@@ -23,25 +24,51 @@
     <string name="freshup">Fresh up!</string>
     <string name="quality">Quality</string>
     <string name="quality_summary">Better quality results in longer (more) SMS.</string>
-    <string name="website">website</string>
-    <string name="half_size">half size</string>
+    <string name="website">Visit website</string>
+    <string name="scale">Image scale</string>
+    <string name="prefgif">Gif and not WEBP</string>
+    <string name="scale_summary">Smaller image scale results in less SMS.</string>
+    <string name="add_some_text_here">optional additional sms text...</string>
+
+    <string-array name="scale_names">
+        <item>tenth</item>
+        <item>1/4</item>
+        <item>1/3</item>
+        <item>half</item>
+        <item>3/4</item>
+        <item>full</item>
+    </string-array>
+
+    <string-array name="scale_values">
+        <item>10</item>
+        <item>25</item>
+        <item>33</item>
+        <item>50</item>
+        <item>75</item>
+        <item>100</item>
+    </string-array>
 
     <string-array name="quality_names">
+        <item>10% strange</item>
         <item>20% terrible</item>
         <item>30% ugly</item>
         <item>50% default</item>
         <item>60% ok</item>
         <item>75% good</item>
+        <item>85% fine</item>
         <item>90% best</item>
     </string-array>
 
     <string-array name="quality_values">
+        <item>10</item>
         <item>20</item>
         <item>30</item>
         <item>50</item>
         <item>60</item>
         <item>75</item>
+        <item>85</item>
         <item>90</item>
     </string-array>
 
 </resources>
+

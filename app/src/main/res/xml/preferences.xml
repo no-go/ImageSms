@@ -9,17 +9,25 @@
         android:summary="@string/quality_summary"
         android:title="@string/quality" />
 
-    <CheckBoxPreference
-        android:key="half"
-        android:defaultValue="true"
-        android:title="@string/half_size" />
+    <ListPreference
+        android:key="scale"
+        android:defaultValue="50"
+        android:entries="@array/scale_names"
+        android:entryValues="@array/scale_values"
+        android:summary="@string/scale_summary"
+        android:title="@string/scale" />
 
     <EditTextPreference
-        android:key="display_limit"
+        android:defaultValue="10"
         android:inputType="numberDecimal"
-        android:defaultValue="25"
+        android:key="display_limit"
         android:numeric="integer"
         android:title="@string/display_limit" />
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="as_gif"
+        android:title="@string/prefgif" />
 
     <EditTextPreference
         android:key="send_to"

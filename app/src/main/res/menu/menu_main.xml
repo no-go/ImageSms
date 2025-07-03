@@ -1,8 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="click.dummer.imagesms.ScrollingActivity">
-
+    tools:context="click.dummer.imagesms.MainActivity">
     <item
         android:id="@+id/action_read_inbox"
         android:title="@string/read_in"
@@ -23,10 +22,6 @@
         android:title="@string/img_down"
         app:showAsAction="never" />
 
-    <item android:id="@+id/action_take_pic"
-        android:title="@string/take_pic"
-        app:showAsAction="never" />
-
     <item
         android:id="@+id/action_website"
         android:title="@string/website"
@@ -36,5 +31,4 @@
         android:id="@+id/action_settings"
         android:title="@string/settings"
         app:showAsAction="never" />
-
 </menu>

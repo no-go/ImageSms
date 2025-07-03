@@ -25,7 +25,7 @@ public class MyPreferenceFragment extends PreferenceFragment implements SharedPr
     }
 
     @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
 
     }
 }
